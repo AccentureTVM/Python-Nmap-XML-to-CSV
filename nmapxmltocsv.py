@@ -37,8 +37,9 @@ def main(argv):
 	for host in root.findall('host'):
 		ip = host.find('address').get('addr')
 		hostname = ""
-		if host.find('hostnames').find('hostname') is not None:
-			hostname = host.find('hostnames').find('hostname').get('name')
+		if host.find('hostnames') is not None:
+			if host.find('hostnames').find('hostname') is not None:
+				hostname = host.find('hostnames').find('hostname').get('name')
 		for port in host.find('ports').findall('port'):
 			protocol = port.get('protocol')
 			if protocol is None:
@@ -46,13 +47,25 @@ def main(argv):
 			portnum = port.get('portid')
 			if portnum is None:
 				portnum = ""
-			service = port.find('service').get('name')
-			if service is None:
-				service = ""
-			version = port.find('service').get('product')
-			if version is None:
-				version = ""
-			out = ip + ',' + hostname + ',' + portnum + ',' + protocol + ',' + service + ',' + version + '\n'
+			service = ""
+			if port.find('service') is not None:
+				if port.find('service').get('name') is not None:
+					service = port.find('service').get('name')
+			product = ""
+			version = ""
+			versioning = ""
+			extrainfo = ""
+			if port.find('service') is not None:
+				if port.find('service').get('product') is not None:
+					product = port.find('service').get('product')
+					versioning = product.replace(",", "")
+				if port.find('service').get('version') is not None:
+					version = port.find('service').get('version')
+					versioning = versioning + ' (' + version + ')'
+				if port.find('service').get('extrainfo') is not None:
+					extrainfo = port.find('service').get('extrainfo')
+					versioning = versioning + ' (' + extrainfo + ')'
+			out = ip + ',' + hostname + ',' + portnum + ',' + protocol + ',' + service + ',' + versioning + '\n'
 			fo.write (out)
 	
 	fo.close()
